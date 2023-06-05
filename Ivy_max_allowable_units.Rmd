@@ -366,6 +366,49 @@ We are going to apply the function to all parcels in Fresno under two scenarios:
   2) baseline_output - under this scenario, all parcels (both upzone eligible and upzone ineligible) will use the same toggles in order to run a scenario where no upzoning takes place. In order to do this, toggle_baseline is provided as the toggle file for bother the toggle_sim input and the toggle_baseline input. The upzone vector is also adjusted to c(-999, -999, -999) so that the values in the upzone vector are never chosen as the value for max_far_adj
 
 
+
+
+```{r}
+sim_output <- calc_max_units(base_path = base_path
+                             , parcel_file = "SanJose_parcel_230601.csv"
+                             , toggle_sim = "toggle_simulation.xlsx"
+                             , toggle_baseline = "toggle_baseline.xlsx"
+                             , hardcoded_inputs_file = "hardcoded inputs.xlsx"
+                             , bonus_file = "bmr_bonuses.csv"
+                             , upzone = c(1, 1.25, 1.5))
+
+baseline_output <- calc_max_units(base_path = base_path
+                                  , parcel_file = "SanJose_parcel_230601.csv"
+                                  , toggle_sim = "toggle_baseline.xlsx"
+                                  , toggle_baseline = "toggle_baseline.xlsx"
+                                  , hardcoded_inputs_file = "hardcoded inputs.xlsx"
+                                  , bonus_file = "bmr_bonuses.csv"
+                                  , upzone = c(-999, -999, -999))
+
+### here we calculate the total maximum allowable units under each scenario
+sum(sim_output$max_du_final,na.rm=T)
+sum(baseline_output$max_du_final,na.rm=T)
+
+```
+
+```{r}
+nrow(sim_output)
+nrow(baseline_output)
+```
+```{r}
+sum(sim_output$UNITS_PER_LOT,na.rm=T)
+#sum(baseline_output$ACRES,na.rm=T)
+```
+
+This code will combine all variables from the simulation output with the max_du_final variable from the baseline output and write the combined table to a csv for QC purposes
+```{r}
+output_comb <- sim_output %>% left_join(baseline_output %>% mutate(baseline_max_du = max_du_final) %>% select(ID, baseline_max_du), by = "ID")
+output_comb %>% write.csv("max_du_combined_output.csv")
+
+```
+
+
+TEST CELLS
 ```{r}
 parcel_file = "parcel_sample.csv"
 toggle_sim = "toggle_simulation.xlsx"
@@ -415,46 +458,4 @@ test_parcel <- test_parcel %>% mutate(
 ```
 ```{r}
 min(2, 3, NA, na.rm = TRUE)
-```
-
-
-```{r}
-sim_output <- calc_max_units(base_path = base_path
-                             , parcel_file = "SanJose_parcel_230601.csv"
-                             , toggle_sim = "toggle_simulation.xlsx"
-                             , toggle_baseline = "toggle_baseline.xlsx"
-                             , hardcoded_inputs_file = "hardcoded inputs.xlsx"
-                             , bonus_file = "bmr_bonuses.csv"
-                             , upzone = c(1, 1.25, 1.5))
-
-baseline_output <- calc_max_units(base_path = base_path
-                                  , parcel_file = "SanJose_parcel_230601.csv"
-                                  , toggle_sim = "toggle_baseline.xlsx"
-                                  , toggle_baseline = "toggle_baseline.xlsx"
-                                  , hardcoded_inputs_file = "hardcoded inputs.xlsx"
-                                  , bonus_file = "bmr_bonuses.csv"
-                                  , upzone = c(-999, -999, -999))
-
-### here we calculate the total maximum allowable units under each scenario
-sum(sim_output$max_du_final,na.rm=T)
-sum(baseline_output$max_du_final,na.rm=T)
-
-```
-
-```{r}
-nrow(sim_output)
-nrow(baseline_output)
-```
-```{r}
-sum(sim_output$UNITS_PER_LOT,na.rm=T)
-#sum(baseline_output$ACRES,na.rm=T)
-```
-
-This code will combine all variables from the simulation output with the max_du_final variable from the baseline output and write the combined table to a csv for QC purposes
-```{r}
-
-output_comb <- sim_output %>% left_join(baseline_output %>% mutate(baseline_max_du = max_du_final) %>% select(ID, baseline_max_du), by = "ID")
-output_comb %>% write.csv("max_du_combined_output.csv")
-
-
 ```
