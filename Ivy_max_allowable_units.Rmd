@@ -27,7 +27,7 @@ Sys.info()['user']
 ```{r}
 ### set working directory. if you are running on a different machine than those listed below, add your own machine to the logical tests below
 if (Sys.info()["user"]=="ivycao") {
-  base_path <- "/Users/ivycao/Library/CloudStorage/GoogleDrive-guangyue.cao@ternerlabs.org/Shared drives/Data Lab -- Terner Housing Innovation Labs/Consulting Projects/Work_AHCS CAYIMBY/SanJose Capacity/"
+  base_path <- "/Users/ivycao/Library/CloudStorage/GoogleDrive-guangyue.cao@ternerlabs.org/Shared drives/Data Lab -- Terner Housing Innovation Labs/Consulting Projects/Work_AHCS CAYIMBY/CAYIMBY-Capacity/"
 }
 
 if (Sys.info()["user"]=="Haley") {
@@ -303,9 +303,7 @@ calc_max_units <- function(base_path
         ## avg_setback_post_bonus is equal to avg_setback_adj (this is where you might add in logic based on TOC or other local bonus programs not present in Fresno)
       ,avg_setback_post_bonus = avg_setback_adj
       ## ADD SJ TOC Here
-      ,max_far_post_bonus = ifelse(max_far_adj>=99999
-                                   , ifelse(!is.na(servi_tier), toc_max_far, max_far_adj)
-                                   , max(max_far_adj, ifelse(!is.na(servi_tier), toc_max_far, max_far_adj)))
+      ,max_far_post_bonus = ifelse(max_far_adj ==99999,99999,max(max_far_adj, ifelse(!is.na(servi_tier), toc_max_far, max_far_adj)))
       ,max_height_post_bonus = max_height_derived
       
       ## max_dua_post_state_bonus is equal to max_dua_adj * (1 + state density bonus), where the value of the state density bonus is different if the parcel is upzone eligible or not
@@ -315,12 +313,8 @@ calc_max_units <- function(base_path
       
       ## again, in this case we could remove max_dua_post_TOC_bonus altogether since it is simply always equal to max_dua_adj, but it is left here in case you want to add logic for local bonus programs
       ## ADD SJ TOC Here
-      ,max_dua_post_TOC_bonus = ifelse(max_dua_adj >=99999
-                                       , ifelse((!is.na(servi_tier)) & (RESI_ALLOWED == 1), toc_max_dua, max_dua_adj)
-                                       , max(max_dua_adj, ifelse((!is.na(servi_tier)) & (RESI_ALLOWED == 1), toc_max_dua, max_dua_adj)))
-      ,max_dua_post_bonus = ifelse(max_dua_post_state_bonus >=99999
-                                   , max_dua_post_TOC_bonus
-                                   , max(max_dua_post_TOC_bonus, max_dua_post_state_bonus))
+      ,max_dua_post_TOC_bonus = ifelse(max_dua_adj ==99999, 99999 , max(max_dua_adj, ifelse((!is.na(servi_tier)) & (RESI_ALLOWED == 1), toc_max_dua, max_dua_adj)))
+      ,max_dua_post_bonus = ifelse(max_dua_post_state_bonus ==99999, 99999, max(max_dua_post_TOC_bonus, max_dua_post_state_bonus))
       ## ADD SJ TOC Here
       ,min_parking_per_du_post_bonus = min(min_parking_per_du_adj, ifelse(!is.na(servi_tier), toc_max_parking, min_parking_per_du_adj))
       
@@ -356,7 +350,7 @@ calc_max_units <- function(base_path
   ## In San Jose, the zones below are non-residential
   ## adjust the max_du_final for all non-residential zones to be equal to 0
   parcels_env$max_du_final[parcels_env$BASE_ZONING %in% c('HI', 'A', 'IP', 'LI', 'CO', 'CIC', 'PQP', 'OS', 'R-MH', 'TEC',
-       'MS-G', 'MS-C', 'CN', 'UVC',"<Null>")] <- 0
+       'CN', 'UVC',"<Null>")] <- 0
   
   ## return all of the parcels withe max_du_final calculated
   return(parcels_env)
