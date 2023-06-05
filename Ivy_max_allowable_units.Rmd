@@ -348,9 +348,8 @@ calc_max_units <- function(base_path
     )
   
   ## In San Jose, the zones below are non-residential
-  ## adjust the max_du_final for all non-residential zones to be equal to 0
-  parcels_env$max_du_final[parcels_env$BASE_ZONING %in% c('HI', 'A', 'IP', 'LI', 'CO', 'CIC', 'PQP', 'OS', 'R-MH', 'TEC',
-       'CN', 'UVC',"<Null>")] <- 0
+  ## adjust the max_du_final for all non-residential parcels to be equal to 0
+  parcels_env$max_du_final[parcels_env$RESI_ALLOWED == 'False'] <- 0
   
   ## return all of the parcels withe max_du_final calculated
   return(parcels_env)
@@ -396,8 +395,8 @@ nrow(sim_output)
 nrow(baseline_output)
 ```
 ```{r}
-sum(sim_output$UNITS_PER_LOT,na.rm=T)
-#sum(baseline_output$ACRES,na.rm=T)
+sum(sim_output$ACRES[sim_output$RESI_ALLOWED == 'True'],na.rm=T)
+sum(baseline_output$ACRES,na.rm=T)
 ```
 
 This code will combine all variables from the simulation output with the max_du_final variable from the baseline output and write the combined table to a csv for QC purposes
